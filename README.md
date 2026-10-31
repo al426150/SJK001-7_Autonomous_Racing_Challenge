@@ -54,3 +54,16 @@ A **Proportional (P) Controller** is the most straightforward approach to tackle
 
 ![P Controller Line Following](assets/p_controller_simulation.png)
 *Figure 1: Vehicle tracking the red line using the baseline Proportional controller.*
+
+### Different versions of Proportional (P) Controller to see different results
+
+| setV | setW | Lap Time | Result / Notes |
+| :--- | :--- | :--- | :--- |
+| 1 | 0.01 * err | 816 s | Completed lap. Very stable, but slow speed. |
+| 2 | 0.01 * err | 329 s | Base speed increase without modifying angular gain. It completes the circuit faster. |
+| 2 | 0.015 * err | 321 s | K_p adjustment to improve cornering at higher V. |
+| 4 | 0.015 * err | 172 s | Moderate speed; monitor for straight-line oscillation. |
+| 4 | 0.02 * err | 175 s | Increased responsiveness in sharp turns, but worse time than lower setW. |
+| 6 | 0.02 * err | no time | Failed to complete the lap when tryin to increase the setV. |
+
+
