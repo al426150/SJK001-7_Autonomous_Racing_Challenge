@@ -62,7 +62,7 @@ A **Proportional (P) Controller** is the most straightforward approach to tackle
 | 1 | 0.01 * err | 816 s | Completed lap. Very stable, but slow speed. |
 | 2 | 0.01 * err | 329 s | Base speed increase without modifying angular gain. It completes the circuit faster. |
 | 2 | 0.015 * err | 321 s | K_p adjustment to improve cornering at higher V. |
-| 4 | 0.015 * err | 172 s | Moderate speed; monitor for straight-line oscillation. |
+| 4 | 0.015 * err | 172 s | Moderate speed with straight-line oscillation. |
 | 5.7 | 0.015 * err | 125.78 s | Best lap time registered. |
 | 4 | 0.02 * err | 175 s | Increased responsiveness in sharp turns, but worse time than lower setW. |
 | 6 | 0.02 * err | no time | Failed to complete the lap when tryin to increase the setV. |
@@ -110,12 +110,10 @@ The steering output is calculated as:
 
 ### Different versions of Proportional Derivative (PD) Controller to see different results
 
-| setV | setW | Lap Time | Result / Notes |
-| :--- | :--- | :--- | :--- |
-| 1 | 0.01 * err | 816 s | Completed lap. Very stable, but slow speed. |
-| 2 | 0.01 * err | 329 s | Base speed increase without modifying angular gain. It completes the circuit faster. |
-| 2 | 0.015 * err | 321 s | K_p adjustment to improve cornering at higher V. |
-| 4 | 0.015 * err | 172 s | Moderate speed; monitor for straight-line oscillation. |
-| 5.7 | 0.015 * err | 125.78 s | Best lap time registered. |
-| 4 | 0.02 * err | 175 s | Increased responsiveness in sharp turns, but worse time than lower setW. |
-| 6 | 0.02 * err | no time | Failed to complete the lap when tryin to increase the setV. |
+| setV | K_p | K_d | Lap Time | Result / Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| 4.0 | 0.015 | 0.008 | 178 s | Baseline PD test, residual zig-zag still persists. |
+| 4.0 | 0.012 | 0.015 | 168 s | Reduced proportional gain and increased damping to flatten straight lines, in a way that the zig-zag effect disappears in straight lines. |
+| 4.0 | 0.012 | 0.020 | 166 s | Smoother trajectory with visibly reduced zig-zag in curves. Completed lap 2-6 seconds faster due to minimized lateral deviation. |
+| 5.0 | 0.015 | 0.018 | 139 s | Notable lap time reduction. Although mild oscillations remain, the derivative term provides sufficient stability to negotiate corners at higher speeds. |
+| Dynamic (5.0 to 6.8) | 0.010 | 0.016 | 131 s | High stability with negligible oscillations. Adaptive speed reliably negotiates corners at 5.0 m/s while exploiting straightaways up to 6.8 m/s. |
