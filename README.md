@@ -117,3 +117,20 @@ The steering output is calculated as:
 | 4.0 | 0.012 | 0.020 | 166 s | Smoother trajectory with visibly reduced zig-zag in curves. Completed lap 2-6 seconds faster due to minimized lateral deviation. |
 | 5.0 | 0.015 | 0.018 | 139 s | Notable lap time reduction. Although mild oscillations remain, the derivative term provides sufficient stability to negotiate corners at higher speeds. |
 | Dynamic (5.0 to 6.8) | 0.010 | 0.016 | 131 s | High stability with negligible oscillations. Adaptive speed reliably negotiates corners at 5.0 m/s while exploiting straightaways up to 6.8 m/s. |
+| Dynamic (5.5 to 7.8) | 0.012 | 0.018 | 126 s | New personal best. Raising the cornering floor to 5.5 m/s and straightaway peak to 7.8 m/s shaved off 5 seconds while preserving damping stability. |
+| Dynamic (5.5 to 8.7) | 0.012 | 0.035 | 120.2 s | New personal best. Increased the maximum speed to 8.7 m/s and derivative gain to 0.035, improving lap time by 5.8 seconds compared with the previous best. However, noticeable zig-zag oscillations still persist. |
+| Dynamic (5.5 to 11.0) | 0.011 | 0.035 | 92 s | New personal best. Increased the maximum speed from 9.2 to 11.0 m/s while keeping the PD gains unchanged. Achieved a significant reduction in lap time (19 seconds), although this came at the cost of pronounced zig-zag oscillations and reduced trajectory stability. |
+
+### Conclusions for Proportional-Derivative (PD) Controller
+
+Throughout the experiments, the PD controller proved to be an effective approach for line following, providing a good balance between steering responsiveness and trajectory stability.
+
+Initially, the main challenge was reducing the oscillatory behavior (zig-zag movements) caused by excessive steering corrections. Different combinations of proportional (K_p) and derivative (K_d) gains were tested. Reducing $K_p$ helped limit overcorrection, while increasing K_d provided additional damping, resulting in smoother trajectories.
+
+After obtaining a reasonably stable controller, the focus shifted towards improving lap times through dynamic speed control. Instead of maintaining a constant velocity, the robot adjusted its speed according to the distance between the detected line and the image center. This allowed it to maintain lower speeds in curves while reaching higher speeds on straight sections.
+
+The results showed a considerable improvement in performance. The initial configuration completed the lap in 178 seconds, whereas subsequent tuning and dynamic speed adjustments progressively reduced the time. The best result was **92 seconds**, achieved with $K_p = 0.011$, $K_d = 0.035$, and a dynamic speed ranging from 5.5 to 11.0 m/s.
+
+However, this improvement also revealed an important limitation: increasing the maximum speed too much resulted in pronounced oscillations and reduced trajectory stability. Therefore, the fastest configuration is not necessarily the most reliable one.
+
+Overall, the experiments demonstrate that the PD controller can achieve very good performance through careful gain tuning and dynamic velocity adjustment. Nevertheless, finding an appropriate balance between lap time and trajectory stability remains essential.
