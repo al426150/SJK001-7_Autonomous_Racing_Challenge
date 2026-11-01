@@ -63,7 +63,19 @@ A **Proportional (P) Controller** is the most straightforward approach to tackle
 | 2 | 0.01 * err | 329 s | Base speed increase without modifying angular gain. It completes the circuit faster. |
 | 2 | 0.015 * err | 321 s | K_p adjustment to improve cornering at higher V. |
 | 4 | 0.015 * err | 172 s | Moderate speed; monitor for straight-line oscillation. |
+| 5.5 | 0.015 * err | 129 s | Best lap time registered. |
 | 4 | 0.02 * err | 175 s | Increased responsiveness in sharp turns, but worse time than lower setW. |
 | 6 | 0.02 * err | no time | Failed to complete the lap when tryin to increase the setV. |
 
+### Conclusions for Proportional (P) Controller
 
+Based on the experimental results shown in the table above, the proportional controller works well as a starting point, but it has some limitations:
+
+**Zig-Zag Movement:** Increasing the steering gain to improve steering at higher speeds can make the car move from side to side around the center of the track. For example, at setV = 4, increasing Kp from 0.015 to 0.020 increased the lap time from 172 s to 175 s. This happens because the car makes too many steering corrections instead of following a smooth path.
+
+**Maximum Speed:** At setV = 6, the car cannot complete the lap. At this speed, the camera and image processing take too long to react to changes, especially in sharp turns. As a result, the car loses sight of the track and cannot continue following it.
+
+**Controller Limitations:** The proportional controller has difficulty balancing speed and stability. Increasing the steering response can make the car less stable, while reducing it can make the car too slow to handle sharp turns. Adding a derivative term or adjusting the speed depending on the track could help improve these results.
+
+![P Controller Line Following](assets/p_controller_simulation_zigZag.png)
+*Figure 2: Vehicle tracking the red line using the baseline Proportional controller, exhibiting noticeable oscillatory (zig-zag) behavior.*
