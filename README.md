@@ -71,11 +71,11 @@ A **Proportional (P) Controller** is the most straightforward approach to tackle
 
 Based on the experimental results shown in the table above, the proportional controller works well as a starting point, but it has some limitations:
 
-**Zig-Zag Movement:** Increasing the steering gain to improve steering at higher speeds can make the car move from side to side around the center of the track. For example, at setV = 4, increasing Kp from 0.015 to 0.020 increased the lap time from 172 s to 175 s. This happens because the car makes too many steering corrections instead of following a smooth path.
+* **Zig-Zag Movement:** Increasing the steering gain to improve steering at higher speeds can make the car move from side to side around the center of the track. For example, at setV = 4, increasing Kp from 0.015 to 0.020 increased the lap time from 172 s to 175 s. This happens because the car makes too many steering corrections instead of following a smooth path.
 
-**Maximum Speed:** At setV = 6, the car cannot complete the lap. At this speed, the camera and image processing take too long to react to changes, especially in sharp turns. As a result, the car loses sight of the track and cannot continue following it.
+* **Maximum Speed:** At setV = 6, the car cannot complete the lap. At this speed, the camera and image processing take too long to react to changes, especially in sharp turns. As a result, the car loses sight of the track and cannot continue following it.
 
-**Controller Limitations:** The proportional controller has difficulty balancing speed and stability. Increasing the steering response can make the car less stable, while reducing it can make the car too slow to handle sharp turns. Adding a derivative term or adjusting the speed depending on the track could help improve these results.
+* **Controller Limitations:** The proportional controller has difficulty balancing speed and stability. Increasing the steering response can make the car less stable, while reducing it can make the car too slow to handle sharp turns. Adding a derivative term or adjusting the speed depending on the track could help improve these results.
 
 ![P Controller Line Following](assets/p_controller_simulation_zigZag.png)
 *Figure 2: Vehicle tracking the red line using the baseline Proportional controller, exhibiting noticeable oscillatory (zig-zag) behavior.*
@@ -134,3 +134,48 @@ The results showed a considerable improvement in performance. The initial config
 However, this improvement also revealed an important limitation: increasing the maximum speed too much resulted in pronounced oscillations and reduced trajectory stability. Therefore, the fastest configuration is not necessarily the most reliable one.
 
 Overall, the experiments demonstrate that the PD controller can achieve very good performance through careful gain tuning and dynamic velocity adjustment. Nevertheless, finding an appropriate balance between lap time and trajectory stability remains essential.
+
+## Proportional-Integral-Derivative (PID) Controller
+
+A **PID controller** combines three control actions to help the car follow the track more accurately and maintain a stable trajectory.
+
+### How It Works
+
+- **Proportional (P):** Reacts to the current distance between the car and the center of the track (`err = 320 - cX`).
+- **Integral (I):** Accumulates previous errors over time. It helps correct persistent deviations from the center.
+- **Derivative (D):** Measures how quickly the error changes. It helps prevent excessive steering corrections.
+
+Since the camera captures images at separate time intervals, the integral and derivative terms are calculated using previous error values:
+
+**Integral:**
+
+**I = I + err**
+
+**Derivative:**
+
+**Δerr = err(t) − err(t−1)**
+
+The steering output is calculated as:
+
+**W = (Kp × err) + (Ki × I) + (Kd × Δerr)**
+
+#### Performance & Evaluation
+
+* **Strengths:**
+  * **Reduced steady-state error:** Helps correct persistent deviations from the track center.
+  * **Improved accuracy:** Combines current and accumulated errors to improve steering corrections.
+
+* **Limitations:**
+  * **Oscillations:** Excessive integral gain can make the car oscillate around the track.
+  * **Integral windup:** Accumulating too much error can lead to excessive steering corrections.
+  * **More tuning:** Three parameters (`Kp`, `Ki`, and `Kd`) must be adjusted to achieve a good balance between responsiveness and stability.
+
+### Different versions of the Proportional-Integral-Derivative (PID) Controller to compare performance
+
+| Experiment | Kp | Ki | Kd | Lap Time | Purpose |
+|---|---:|---:|---:|---:|---|
+| PD Baseline | 0.011 | 0 | 0.035 | 92 s | Reference result using the PD controller |
+| PID Test 1 | 0.011 | 0.00001 | 0.035 | 91 s | A small integral contribution slightly reduced oscillations during the laps while also improving lap time by 1 second. |
+| PID Test 2 | 0.011 | 0.00002 | 0.035 | 92 s | Increasing integral action did not improve lap time compared with Test 1. |
+| PID Test 3 | 0.011 | 0.00005 | 0.035 | TBD | Test a stronger integral contribution |
+| PID Test 4 | 0.011 | 0.0001 | 0.035 | TBD | Evaluate the effect of a larger integral gain |
