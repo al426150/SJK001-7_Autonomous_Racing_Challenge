@@ -63,7 +63,7 @@ A **Proportional (P) Controller** is the most straightforward approach to tackle
 | 2 | 0.01 * err | 329 s | Base speed increase without modifying angular gain. It completes the circuit faster. |
 | 2 | 0.015 * err | 321 s | K_p adjustment to improve cornering at higher V. |
 | 4 | 0.015 * err | 172 s | Moderate speed; monitor for straight-line oscillation. |
-| 5.5 | 0.015 * err | 129 s | Best lap time registered. |
+| 5.7 | 0.015 * err | 125.78 s | Best lap time registered. |
 | 4 | 0.02 * err | 175 s | Increased responsiveness in sharp turns, but worse time than lower setW. |
 | 6 | 0.02 * err | no time | Failed to complete the lap when tryin to increase the setV. |
 
@@ -79,3 +79,43 @@ Based on the experimental results shown in the table above, the proportional con
 
 ![P Controller Line Following](assets/p_controller_simulation_zigZag.png)
 *Figure 2: Vehicle tracking the red line using the baseline Proportional controller, exhibiting noticeable oscillatory (zig-zag) behavior.*
+
+## Proportional-Derivative (PD) Controller
+
+A **PD controller** helps the car steer more smoothly and avoid overcorrecting.
+
+### How It Works
+
+- **Proportional (P):** Reacts to the distance between the car and the center of the track (`err = 320 - cX`).
+- **Derivative (D):** Looks at how quickly this error changes. It helps adjust the steering to prevent the car from turning too far.
+
+Since the camera captures images at separate time intervals, the change in error is calculated by comparing the current error with the previous one:
+
+**Δerr = err(t) − err(t−1)**
+
+The steering output is calculated as:
+
+**W = (Kp × err) + (Kd × Δerr)**
+
+#### Performance & Evaluation
+
+* **Strengths:**
+  
+  * **Less zig-zagging:** Reduces constant steering corrections and helps the car follow a smoother path.
+  * **Higher speeds:** May allow the car to drive faster than `1.0 m/s` while maintaining a stable trajectory, even in sharp turns.
+  
+* **Limitations:**
+  * **Camera noise:** Sudden changes in the detected track center can cause small, unwanted steering movements.
+  * **More tuning:** Both `K_p` and `K_d` need to be adjusted to find a good balance between steering speed and stability.
+
+### Different versions of Proportional Derivative (PD) Controller to see different results
+
+| setV | setW | Lap Time | Result / Notes |
+| :--- | :--- | :--- | :--- |
+| 1 | 0.01 * err | 816 s | Completed lap. Very stable, but slow speed. |
+| 2 | 0.01 * err | 329 s | Base speed increase without modifying angular gain. It completes the circuit faster. |
+| 2 | 0.015 * err | 321 s | K_p adjustment to improve cornering at higher V. |
+| 4 | 0.015 * err | 172 s | Moderate speed; monitor for straight-line oscillation. |
+| 5.7 | 0.015 * err | 125.78 s | Best lap time registered. |
+| 4 | 0.02 * err | 175 s | Increased responsiveness in sharp turns, but worse time than lower setW. |
+| 6 | 0.02 * err | no time | Failed to complete the lap when tryin to increase the setV. |
