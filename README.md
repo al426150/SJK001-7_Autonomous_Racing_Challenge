@@ -169,6 +169,9 @@ The steering output is calculated as:
   * **Oscillations:** Excessive integral gain can make the car oscillate around the track.
   * **Integral windup:** Accumulating too much error can lead to excessive steering corrections.
   * **More tuning:** Three parameters (`Kp`, `Ki`, and `Kd`) must be adjusted to achieve a good balance between responsiveness and stability.
+  * 
+![P Controller Line Following](assets/p_controller_simulation_PID.png)
+*Figure 2: Vehicle tracking the red line using the baseline Proportional controller, correcting its direction thanks to the PID version.*
 
 ### Different versions of the Proportional-Integral-Derivative (PID) Controller to compare performance
 
@@ -177,5 +180,20 @@ The steering output is calculated as:
 | PD Baseline | 0.011 | 0 | 0.035 | 92 s | Reference result using the PD controller |
 | PID Test 1 | 0.011 | 0.00001 | 0.035 | 91 s | A small integral contribution slightly reduced oscillations during the laps while also improving lap time by 1 second. |
 | PID Test 2 | 0.011 | 0.00002 | 0.035 | 92 s | Increasing integral action did not improve lap time compared with Test 1. |
-| PID Test 3 | 0.011 | 0.00005 | 0.035 | TBD | Test a stronger integral contribution |
-| PID Test 4 | 0.011 | 0.0001 | 0.035 | TBD | Evaluate the effect of a larger integral gain |
+| PID Test 3 | 0.011 | 0.00005 | 0.035 | 93 s | A stronger integral contribution increased lap time, suggesting that excessive integral action may negatively affect performance. |
+| PID Test 4 | 0.011 | 0.0001 | 0.035 | 93 s | Evaluate the effect of a larger integral gain |
+| PID Test 5 - Run 1 | 0.011 | 0.00001 | 0.035 | 85 s | As the integral contribution helped to reduce the oscillation effect, it was tested to increase the speed, obtaining a faster time. |
+| PID Test 5 - Run 2 | 0.011 | 0.00001 | 0.035 | 87 s | It was tested again the same run, and, now, a worse time was obtained, but still better than previous runs. |
+| PID Test 5 - Average | 0.011 | 0.00001 | 0.035 | 86 s |
+
+### Conclusions for Proportional-Integral-Derivative (PID) Controller
+
+The experimental results show that adding an integral component to the PD controller can provide a small improvement in performance. The best result with the initial maximum speed of 11 was obtained using Ki = 0.00001, reducing the lap time from 92 to 91 seconds.
+
+However, increasing the integral gain further did not improve performance. Tests with Ki = 0.00002, 0.00005, and 0.0001 resulted in lap times of 92, 93, and 93 seconds, respectively. This suggests that excessive integral action can negatively affect the controller's performance.
+
+Increasing the maximum speed from 11 to 12 produced the best results so far, with lap times of 85 and 87 seconds across two runs, giving an average of 86 seconds. This suggests that increasing the maximum speed can improve overall performance, although some variation between runs is observed.
+
+Overall, the best configuration tested so far uses Kp = 0.011, Ki = 0.00001, Kd = 0.035, and a dynamic speed ranging from 5.5 to 12. Further experiments could focus on checking the stability of this configuration and finding a balance between lap time and steering oscillations.
+
+
