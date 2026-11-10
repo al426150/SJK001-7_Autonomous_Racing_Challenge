@@ -188,7 +188,7 @@ The steering output is calculated as:
 | PID Test 5 - Run 2 | 0.011 | 0.00001 | 0.035 | 87 s | It was tested again the same run, and, now, a worse time was obtained, but still better than previous runs. |
 | PID Test 5 - Average | 0.011 | 0.00001 | 0.035 | 86 s |
 | PID Test 5 - Lab Time (CPU) | 0.011 | 0.00001 | 0.035 | 112 s | | I obtained this time trying my code in the laboratory computer with CPU.|
-| PID Test 5 - Lab Time (GPU) | 0.015 | 0.00001 | 0.030 | 55.33 s | | I obtained this time trying my code in the laboratory computer with GPU. I noticdd a big difference when executing this code with the GPU. In the GPU version, it is more noticeable the benefits of the PID Controller. When the sensors detect a straight line, seeing the red mask, the vehicle corrects its direction, being able to reach his highest speed. Another interesting visual detail is that the curves are better taken, fixing the vehicle position.|
+| PID Test 5 - Lab Time (GPU) | 0.015 | 0.00001 | 0.030 | 48.58 s | | I obtained this time trying my code in the laboratory computer with GPU. I noticdd a big difference when executing this code with the GPU. In the GPU version, it is more noticeable the benefits of the PID Controller. When the sensors detect a straight line, seeing the red mask, the vehicle corrects its direction, being able to reach his highest speed. Another interesting visual detail is that the curves are better taken, fixing the vehicle position. max(8, 17 -0.025*abs(err))|
 
 ### Conclusions for Proportional-Integral-Derivative (PID) Controller
 
