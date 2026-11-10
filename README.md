@@ -185,6 +185,7 @@ The steering output is calculated as:
 | PID Test 5 - Run 1 | 0.011 | 0.00001 | 0.035 | 85 s | As the integral contribution helped to reduce the oscillation effect, it was tested to increase the speed, obtaining a faster time. |
 | PID Test 5 - Run 2 | 0.011 | 0.00001 | 0.035 | 87 s | It was tested again the same run, and, now, a worse time was obtained, but still better than previous runs. |
 | PID Test 5 - Average | 0.011 | 0.00001 | 0.035 | 86 s |
+| PID Test 5 - Lab Time | 0.011 | 0.00001 | 0.035 | 112 s | | I obtained this time trying my code in the laboratory computer.|
 
 ### Conclusions for Proportional-Integral-Derivative (PID) Controller
 
