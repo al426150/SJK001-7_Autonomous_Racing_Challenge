@@ -63,7 +63,8 @@ A **Proportional (P) Controller** is the most straightforward approach to tackle
 | 2 | 0.01 * err | 329 s | Base speed increase without modifying angular gain. It completes the circuit faster. |
 | 2 | 0.015 * err | 321 s | K_p adjustment to improve cornering at higher V. |
 | 4 | 0.015 * err | 172 s | Moderate speed with straight-line oscillation. |
-| 5.7 | 0.015 * err | 125.78 s | Best lap time registered. |
+| 5.7 | 0.015 * err | 125.78 s | Best lap time registered in my computer. |
+| 5.7 | 0.015 * err | 125.78 s | Best lap time registered in the laboratory computer. |
 | 4 | 0.02 * err | 175 s | Increased responsiveness in sharp turns, but worse time than lower setW. |
 | 6 | 0.02 * err | no time | Failed to complete the lap when tryin to increase the setV. |
 
