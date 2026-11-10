@@ -121,6 +121,7 @@ The steering output is calculated as:
 | Dynamic (5.5 to 7.8) | 0.012 | 0.018 | 126 s | New personal best. Raising the cornering floor to 5.5 m/s and straightaway peak to 7.8 m/s shaved off 5 seconds while preserving damping stability. |
 | Dynamic (5.5 to 8.7) | 0.012 | 0.035 | 120.2 s | New personal best. Increased the maximum speed to 8.7 m/s and derivative gain to 0.035, improving lap time by 5.8 seconds compared with the previous best. However, noticeable zig-zag oscillations still persist. |
 | Dynamic (5.5 to 11.0) | 0.011 | 0.035 | 92 s | New personal best. Increased the maximum speed from 9.2 to 11.0 m/s while keeping the PD gains unchanged. Achieved a significant reduction in lap time (19 seconds), although this came at the cost of pronounced zig-zag oscillations and reduced trajectory stability. |
+| Dynamic (5.5 to 11.0) | 0.011 | 0.035 | 92 s | Personal best time with CPU. Increased the maximum speed from 9.2 to 11.0 m/s while keeping the PD gains unchanged. Achieved a significant reduction in lap time (19 seconds), although this came at the cost of pronounced zig-zag oscillations and reduced trajectory stability. |
 
 ### Conclusions for Proportional-Derivative (PD) Controller
 
