@@ -178,6 +178,9 @@ A **PID controller** combines proportional, integral, and derivative control act
 | PID Lab Test (CPU) | Dynamic (5.5 to 11.0) | 0.011 | 0.00001 | 0.035 | 112 s | Executed on the laboratory computer using software (CPU) rendering. |
 | PID Lab Test (GPU) | Dynamic (8.0 to 17.0) | 0.015 | 0.00001 | 0.030 | **48.58 s** | **Best overall record.** Executed on the laboratory computer with GPU acceleration. Higher simulation refresh rates made PID benefits much more noticeable: rapid straight-line alignment (reaching $17.0\text{ m/s}$) and sharper, well-corrected cornering trajectories. |
 
+![PID Controller Line Following](assets/PID_Controller_GPU_Result.png)
+*Figure 4: Result obtained when executing the code developed the PID version, showing a faster and better result.*
+
 ### Conclusions for Proportional-Integral-Derivative (PID) Controller
 
 1. **Fine-Tuning the Integral Gain:** Adding a small, clamped integral component ($K_i = 0.00001$) improved cornering precision over the PD baseline, reducing the lap time from $92\text{ s}$ to $91\text{ s}$ at $V_{\max} = 11.0\text{ m/s}$ and allowing a speed increase to $12.0\text{ m/s}$ that achieved an average of **$86\text{ s}$** on CPU. Larger values ($K_i \ge 0.00002$) proved counterproductive.
