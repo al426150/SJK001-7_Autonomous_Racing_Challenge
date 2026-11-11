@@ -10,7 +10,7 @@ Before executing the solution, several setup steps were required to configure th
 
 ### Running the Docker Backend
 
-The simulation environment was deployed locally using Docker (configured to run without hardware/GPU acceleration). 
+The simulation environment was deployed locally using Docker (configured to run without hardware/GPU acceleration). I used the GPU enchanced version to test the best times for the best results that were obtained in the CPU version.
 
 Pull the latest robotics backend image:
 ```bash
@@ -177,18 +177,18 @@ The steering output is calculated as:
 
 ### Different versions of the Proportional-Integral-Derivative (PID) Controller to compare performance
 
-| Experiment | Kp | Ki | Kd | Lap Time | Purpose |
-|---|---:|---:|---:|---:|---|
-| PD Baseline | 0.011 | 0 | 0.035 | 92 s | Reference result using the PD controller |
-| PID Test 1 | 0.011 | 0.00001 | 0.035 | 91 s | A small integral contribution slightly reduced oscillations during the laps while also improving lap time by 1 second. |
-| PID Test 2 | 0.011 | 0.00002 | 0.035 | 92 s | Increasing integral action did not improve lap time compared with Test 1. |
-| PID Test 3 | 0.011 | 0.00005 | 0.035 | 93 s | A stronger integral contribution increased lap time, suggesting that excessive integral action may negatively affect performance. |
-| PID Test 4 | 0.011 | 0.0001 | 0.035 | 93 s | Evaluate the effect of a larger integral gain |
-| PID Test 5 - Run 1 | 0.011 | 0.00001 | 0.035 | 85 s | As the integral contribution helped to reduce the oscillation effect, it was tested to increase the speed, obtaining a faster time. |
-| PID Test 5 - Run 2 | 0.011 | 0.00001 | 0.035 | 87 s | It was tested again the same run, and, now, a worse time was obtained, but still better than previous runs. |
-| PID Test 5 - Average | 0.011 | 0.00001 | 0.035 | 86 s |
-| PID Test 5 - Lab Time (CPU) | 0.011 | 0.00001 | 0.035 | 112 s | | I obtained this time trying my code in the laboratory computer with CPU.|
-| PID Test 5 - Lab Time (GPU) | 0.015 | 0.00001 | 0.030 | 48.58 s | | I obtained this time trying my code in the laboratory computer with GPU. I noticdd a big difference when executing this code with the GPU. In the GPU version, it is more noticeable the benefits of the PID Controller. When the sensors detect a straight line, seeing the red mask, the vehicle corrects its direction, being able to reach his highest speed. Another interesting visual detail is that the curves are better taken, fixing the vehicle position. max(8, 17 -0.025*abs(err))|
+| Experiment | setV | Kp | Ki | Kd | Lap Time | Purpose |
+|---|---:|---:|---:|---:|---:|---|
+| PD Baseline | 0.011 | Dynamic (5.5 to 11.0)| 0 | 0.035 | 92 s | Reference result using the PD controller |
+| PID Test 1 | 0.011 | Dynamic (5.5 to 11.0)| 0.00001 | 0.035 | 91 s | A small integral contribution slightly reduced oscillations during the laps while also improving lap time by 1 second. |
+| PID Test 2 | 0.011 | Dynamic (5.5 to 11.0)| 0.00002 | 0.035 | 92 s | Increasing integral action did not improve lap time compared with Test 1. |
+| PID Test 3 | 0.011 | Dynamic (5.5 to 11.0)| 0.00005 | 0.035 | 93 s | A stronger integral contribution increased lap time, suggesting that excessive integral action may negatively affect performance. |
+| PID Test 4 | 0.011 | Dynamic (5.5 to 11.0)| 0.0001 | 0.035 | 93 s | Evaluate the effect of a larger integral gain |
+| PID Test 5 - Run 1 | 0.011 | Dynamic (5.5 to 11.0)| 0.00001 | 0.035 | 85 s | As the integral contribution helped to reduce the oscillation effect, it was tested to increase the speed, obtaining a faster time. |
+| PID Test 5 - Run 2 | 0.011 |Dynamic (5.5 to 11.0)|  0.00001 | 0.035 | 87 s | It was tested again the same run, and, now, a worse time was obtained, but still better than previous runs. |
+| PID Test 5 - Average | 0.011 | Dynamic (5.5 to 11.0)| 0.00001 | 0.035 | 86 s |
+| PID Test 5 - Lab Time (CPU) | 0.011 | Dynamic (5.5 to 11.0) | 0.00001 | 0.035 | 112 s | | I obtained this time trying my code in the laboratory computer with CPU.|
+| PID Test 5 - Lab Time (GPU) | 0.015 | Dynamic (8 to 17.0) | 0.00001 | 0.030 | 48.58 s | | I obtained this time trying my code in the laboratory computer with GPU. I noticdd a big difference when executing this code with the GPU. In the GPU version, it is more noticeable the benefits of the PID Controller. When the sensors detect a straight line, seeing the red mask, the vehicle corrects its direction, being able to reach his highest speed. Another interesting visual detail is that the curves are better taken, fixing the vehicle position. max(8, 17 -0.025*abs(err))|
 
 ### Conclusions for Proportional-Integral-Derivative (PID) Controller
 
@@ -198,6 +198,6 @@ However, increasing the integral gain further did not improve performance. Tests
 
 Increasing the maximum speed from 11 to 12 produced the best results so far, with lap times of 85 and 87 seconds across two runs, giving an average of 86 seconds. This suggests that increasing the maximum speed can improve overall performance, although some variation between runs is observed.
 
-Overall, the best configuration tested so far uses Kp = 0.011, Ki = 0.00001, Kd = 0.035, and a dynamic speed ranging from 5.5 to 12. Further experiments could focus on checking the stability of this configuration and finding a balance between lap time and steering oscillations.
+Further experiments could focus on checking the stability of this configuration and finding a balance between lap time and steering oscillations in the CPU version, while the GPU version could focus on optimizing the independent parameters to obtain a higher speed.
 
 
