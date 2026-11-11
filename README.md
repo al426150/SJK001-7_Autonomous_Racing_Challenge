@@ -189,6 +189,8 @@ A **PID controller** combines proportional, integral, and derivative control act
 
 Below are the recorded demonstrations of the best-performing configurations for each controller architecture, executed in my personal laptop with the CPU version:
 
-- **Proportional (P) Controller (Best La CPUp: 125.78 s):** [Watch Video Here](#) *(TODO: Insert link)*
-- **Proportional-Derivative (PD) Controller (Best Lap CPU: 92.00 s):** [Watch Video Here](#) *(TODO: Insert link)*
-- **Proportional-Integral-Derivative (PID) Controller (Best Lap CPU: 48.58 s):** [Watch Video Here](#) *(TODO: Insert link)*
+- **Proportional (P) Controller (Best Lap CPU configuration):** [Watch Video Here](#) *(TODO: Insert link)*
+- **Proportional-Derivative (PD) Controller (Best Lap CPU configuration):** [Watch Video Here](#) *(TODO: Insert link)*
+- **Proportional-Integral-Derivative (PID) Controller (Best Lap CPU configuration):** [Watch Video Here](#) *(TODO: Insert link)*
+
+Note: Lap times recorded during video capture on CPU can be slightly higher than benchmark runs due to the additional CPU overhead of screen recording, which slightly reduces the simulation frame rate and control loop frequency.
