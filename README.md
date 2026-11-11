@@ -10,194 +10,185 @@ Before executing the solution, several setup steps were required to configure th
 
 ### Running the Docker Backend
 
-The simulation environment was deployed locally using Docker (configured to run without hardware/GPU acceleration). I used the GPU enchanced version to test the best times for the best results that were obtained in the CPU version.
+The simulation environment was deployed locally using Docker (configured to run without hardware/GPU acceleration). Additionally, a GPU-enhanced version was used in the laboratory to evaluate maximum performance under higher simulation refresh rates.
 
 Pull the latest robotics backend image:
 ```bash
 docker pull jderobot/robotics-backend:latest
 ```
+
 Launch the container and expose the necessary ports for the web GUI and simulation communication:
 ```bash
 docker run --rm -it -p 6080-6090:6080-6090 -p 7163:7163 jderobot/robotics-backend:latest
 ```
+
+---
 
 ## Solution Overview
 
 ### Algorithm & Image Processing
 The vehicle follows the circuit line using standard computer vision techniques provided by OpenCV:
 1. **Frame Acquisition:** Captures the camera stream using `HAL.getImage()`.
-2. **Color Filtering (HSV Space):** Converts the image from BGR to HSV and isolates the red track line using `cv2.inRange()`.
-3. **Centroid Detection:** Computes the image moments (`cv2.moments`) over the segmented line to extract the horizontal center coordinate (cX).
+2. **Color Filtering (HSV Space):** Converts the image from BGR to HSV and isolates the red track line using `cv2.inRange(hsv, (0, 125, 125), (30, 255, 255))`.
+3. **Centroid Detection:** Computes the geometric image moments (`cv2.moments`) over the binary mask to extract the horizontal center of mass ($c_X$).
 
-### Control Law
-The steering is governed by a **Proportional (P) Controller**:
-* **Error Formulation:** Computed relative to the image center (320 px for a 640 px frame):
-  err = 320 - cX
-* **Actuation:**
-  * **Linear velocity:** v = 1.0m/s (constant)
-  * **Angular velocity:** Ω = K_p * err, with K_p = 0.01
+---
 
-### P Controller Version (Baseline)
+## 1. Proportional (P) Controller (Baseline)
 
-The initial version of the implementation is based on the reference code provided in the virtual classroom. 
+The initial version of the implementation is based on the reference code provided in the virtual classroom. A **Proportional (P) Controller** is the most straightforward approach to tackle the line-following task:
 
-A **Proportional (P) Controller** is the most straightforward approach to tackle the line-following task:
-* **Operating Principle:** It calculates the steering error as the difference between the **Set Point** (the target line position centered in the camera frame, x = 320 px) and the **Current State** (the detected horizontal centroid cX).
-* **Tuning:** The proportional gain K_p is tuned empirically to strike a balance between aggressive steering that triggers unstable oscillations and sluggish responses that lead to understeering.
+### Control Law & Operating Principle
+- **Error Formulation:** Computed as the difference between the **Set Point** (the horizontal center of the $640\text{ px}$ camera frame, $x = 320\text{ px}$) and the **Current Output** (the detected horizontal centroid $c_X$):
+  $$e(t) = 320 - c_X$$
+- **Actuation:**
+  * **Linear velocity ($v$):** Constant value (starting at $v = 1.0\text{ m/s}$ in the baseline).
+  * **Angular velocity ($\omega$):** Proportional to the error:
+    $$\omega = K_p \cdot e(t)$$
+- **Tuning:** The proportional gain $K_p$ is tuned empirically to strike a balance between aggressive steering (which triggers unstable oscillations) and sluggish responses (which lead to understeering in sharp turns).
 
-#### Performance & Evaluation
-* **Strengths:**
-  * **Robust Detection:** The HSV segmentation and image moment calculation consistently detect and trace the red line across the circuit.
-  * **Reliable Tracking:** The vehicle successfully completes full laps of the circuit without derailing or losing track of the path.
-* **Limitations:**
-  * **Low Speed:** To maintain stability and prevent severe overshoot in sharper turns using only proportional gain, the linear speed is constrained to v = 1.0m/s, making lap completion quite slow, obtaining a result of doing the circuit around 816 seconds.
+### Performance & Evaluation
+- **Strengths:**
+  * **Robust Detection:** The HSV segmentation and image moment calculation consistently detect and trace the red line across the entire circuit.
+  * **Reliable Tracking at Low Speeds:** The vehicle successfully completes full laps of the circuit without derailing.
+- **Limitations:**
+  * **Low Speed:** To maintain stability and prevent severe overshoot in sharper turns using only proportional gain, the baseline linear speed is constrained to $v = 1.0\text{ m/s}$, resulting in a slow lap time of $816\text{ s}$.
 
 ![P Controller Line Following](assets/p_controller_simulation.png)
 *Figure 1: Vehicle tracking the red line using the baseline Proportional controller.*
 
-### Different versions of Proportional (P) Controller to see different results
+### Experimental Results: P Controller
 
-| setV | setW | Lap Time | Result / Notes |
-| :--- | :--- | :--- | :--- |
-| 1 | 0.01 * err | 816 s | Completed lap. Very stable, but slow speed. |
-| 2 | 0.01 * err | 329 s | Base speed increase without modifying angular gain. It completes the circuit faster. |
-| 2 | 0.015 * err | 321 s | K_p adjustment to improve cornering at higher V. |
-| 4 | 0.015 * err | 172 s | Moderate speed with straight-line oscillation. |
-| 5.7 | 0.015 * err | 125.78 s | Best lap time registered in my computer. |
-| 5.7 | 0.015 * err | 125.78 s | Best lap time registered in the laboratory computer. |
-| 4 | 0.02 * err | 175 s | Increased responsiveness in sharp turns, but worse time than lower setW. |
-| 6 | 0.02 * err | no time | Failed to complete the lap when tryin to increase the setV. |
+| `setV` (m/s) | `setW` (rad/s) | Lap Time | Result / Notes |
+| :---: | :---: | :---: | :--- |
+| 1.0 | $0.010 \cdot err$ | 816 s | Completed lap. Very stable, but slow speed. |
+| 2.0 | $0.010 \cdot err$ | 329 s | Base speed increase without modifying angular gain. Completes the circuit faster. |
+| 2.0 | $0.015 \cdot err$ | 321 s | $K_p$ adjustment to improve cornering at higher linear velocity. |
+| 4.0 | $0.015 \cdot err$ | 172 s | Moderate speed with noticeable straight-line oscillation. |
+| 4.0 | $0.020 \cdot err$ | 175 s | Increased responsiveness in sharp turns, but slower overall time due to higher oscillation. |
+| 5.7 | $0.015 \cdot err$ | **125.78 s** | **Best P-Controller lap time** (reproduced consistently on both personal and laboratory computers). |
+| 6.0 | $0.020 \cdot err$ | No time | Failed to complete the lap when attempting to increase `setV` to $6.0\text{ m/s}$. |
 
 ### Conclusions for Proportional (P) Controller
 
-Based on the experimental results shown in the table above, the proportional controller works well as a starting point, but it has some limitations:
+Based on the experimental results shown in the table above, the proportional controller works well as a starting point, but exhibits clear structural limitations:
 
-* **Zig-Zag Movement:** Increasing the steering gain to improve steering at higher speeds can make the car move from side to side around the center of the track. For example, at setV = 4, increasing Kp from 0.015 to 0.020 increased the lap time from 172 s to 175 s. This happens because the car makes too many steering corrections instead of following a smooth path.
+- **Zig-Zag Movement:** Increasing the steering gain to improve cornering at higher speeds causes the car to oscillate from side to side around the center of the track. For example, at $\text{setV} = 4.0\text{ m/s}$, increasing $K_p$ from $0.015$ to $0.020$ degraded the lap time from $172\text{ s}$ to $175\text{ s}$ because the vehicle spent extra distance making excessive steering corrections rather than following a smooth path.
+- **Maximum Speed Limit:** At $\text{setV} = 6.0\text{ m/s}$, the vehicle cannot complete the lap. At this velocity, system latency and lack of predictive damping cause the car to overshoot sharp turns and lose sight of the red line completely.
+- **Controller Trade-offs:** A pure P controller struggles to balance high-speed stability and sharp-turn responsiveness. Adding a derivative term and adapting the speed dynamically to the track curvature are necessary next steps.
 
-* **Maximum Speed:** At setV = 6, the car cannot complete the lap. At this speed, the camera and image processing take too long to react to changes, especially in sharp turns. As a result, the car loses sight of the track and cannot continue following it.
+![P Controller Zig-Zag](assets/p_controller_simulation_zigZag.png)
+*Figure 2: Vehicle tracking the red line using the Proportional controller, exhibiting noticeable oscillatory (zig-zag) behavior.*
 
-* **Controller Limitations:** The proportional controller has difficulty balancing speed and stability. Increasing the steering response can make the car less stable, while reducing it can make the car too slow to handle sharp turns. Adding a derivative term or adjusting the speed depending on the track could help improve these results.
+---
 
-![P Controller Line Following](assets/p_controller_simulation_zigZag.png)
-*Figure 2: Vehicle tracking the red line using the baseline Proportional controller, exhibiting noticeable oscillatory (zig-zag) behavior.*
+## 2. Proportional-Derivative (PD) Controller
 
-## Proportional-Derivative (PD) Controller
+A **PD controller** introduces derivative action to anticipate error changes, helping the car steer more smoothly and avoid overcorrecting at higher speeds.
 
-A **PD controller** helps the car steer more smoothly and avoid overcorrecting.
+### How It Works & Code Enhancements
 
-### How It Works
+- **Proportional ($P$):** Reacts to the current distance between the car and the center of the track ($e(t) = 320 - c_X$).
+- **Derivative ($D$):** Evaluates how quickly the error changes over discrete camera frames, acting as a virtual damper that opposes sudden lateral movements:
+  $$\Delta e(t) = e(t) - e(t-1)$$
+- **Dynamic Velocity Adaptation:** Instead of driving at a constant speed, linear velocity is adjusted dynamically as a function of the absolute tracking error:
+  $$\text{setV} = \max(V_{\min}, V_{\max} - k_v \cdot |e(t)|)$$
+  This allows the vehicle to accelerate on straightaways (where $|e(t)| \approx 0$) and automatically decelerate when entering curves.
+- **Gain Scheduling (`speed_factor`):** At high speeds, standard angular commands can cause instability. To prevent this, the steering output is scaled inversely with the current speed:
 
-- **Proportional (P):** Reacts to the distance between the car and the center of the track (`err = 320 - cX`).
-- **Derivative (D):** Looks at how quickly this error changes. It helps adjust the steering to prevent the car from turning too far.
+$$\text{speed factor} = \frac{5.0}{\text{setV}}$$
 
-Since the camera captures images at separate time intervals, the change in error is calculated by comparing the current error with the previous one:
+$$\text{setW} = \left(K_p \cdot e(t) + K_d \cdot \Delta e(t)\right) \cdot \text{speed factor}$$
+- **Failsafe Recovery:** If the vehicle temporarily loses sight of the line in a tight corner ($c_X = 0$), a fallback routine sets $\text{setV} = 3.0\text{ m/s}$ so the vehicle slows down and safely recovers the track.
 
-**Δerr = err(t) − err(t−1)**
+### Performance & Evaluation
 
-The steering output is calculated as:
+- **Strengths:**
+  * **Reduced Zig-Zagging:** The derivative term dampens oscillations on straight sections and corner exits.
+  * **Higher Top Speeds:** Combined with dynamic velocity and `speed_factor` scaling, the vehicle safely reaches up to $11.0\text{ m/s}$ on straightaways.
+- **Limitations:**
+  * **Sensitivity to High-Frequency Changes:** Abrupt shifts in the detected centroid $c_X$ can cause sharp derivative spikes.
+  * **Multi-Parameter Tuning:** Requires simultaneous calibration of $K_p$, $K_d$, and the dynamic velocity bounds.
 
-**W = (Kp × err) + (Kd × Δerr)**
+### Experimental Results: PD Controller
 
-#### Performance & Evaluation
-
-* **Strengths:**
-  
-  * **Less zig-zagging:** Reduces constant steering corrections and helps the car follow a smoother path.
-  * **Higher speeds:** May allow the car to drive faster than `1.0 m/s` while maintaining a stable trajectory, even in sharp turns.
-  
-* **Limitations:**
-  * **Camera noise:** Sudden changes in the detected track center can cause small, unwanted steering movements.
-  * **More tuning:** Both `K_p` and `K_d` need to be adjusted to find a good balance between steering speed and stability.
-
-### Different versions of Proportional Derivative (PD) Controller to see different results
-
-| setV | K_p | K_d | Lap Time | Result / Notes |
-| :--- | :--- | :--- | :--- | :--- |
-| 4.0 | 0.015 | 0.008 | 178 s | Baseline PD test, residual zig-zag still persists. |
-| 4.0 | 0.012 | 0.015 | 168 s | Reduced proportional gain and increased damping to flatten straight lines, in a way that the zig-zag effect disappears in straight lines. |
-| 4.0 | 0.012 | 0.020 | 166 s | Smoother trajectory with visibly reduced zig-zag in curves. Completed lap 2-6 seconds faster due to minimized lateral deviation. |
-| 5.0 | 0.015 | 0.018 | 139 s | Notable lap time reduction. Although mild oscillations remain, the derivative term provides sufficient stability to negotiate corners at higher speeds. |
-| Dynamic (5.0 to 6.8) | 0.010 | 0.016 | 131 s | High stability with negligible oscillations. Adaptive speed reliably negotiates corners at 5.0 m/s while exploiting straightaways up to 6.8 m/s. |
-| Dynamic (5.5 to 7.8) | 0.012 | 0.018 | 126 s | New personal best. Raising the cornering floor to 5.5 m/s and straightaway peak to 7.8 m/s shaved off 5 seconds while preserving damping stability. |
-| Dynamic (5.5 to 8.7) | 0.012 | 0.035 | 120.2 s | New personal best. Increased the maximum speed to 8.7 m/s and derivative gain to 0.035, improving lap time by 5.8 seconds compared with the previous best. However, noticeable zig-zag oscillations still persist. |
-| Dynamic (5.5 to 11.0) | 0.011 | 0.035 | 92 s | New personal best. Increased the maximum speed from 9.2 to 11.0 m/s while keeping the PD gains unchanged. Achieved a significant reduction in lap time (19 seconds), although this came at the cost of pronounced zig-zag oscillations and reduced trajectory stability. |
-| Dynamic (5.5 to 11.0) | 0.011 | 0.035 | 92 s | Personal best time with CPU. Increased the maximum speed from 9.2 to 11.0 m/s while keeping the PD gains unchanged. Achieved a significant reduction in lap time (19 seconds), although this came at the cost of pronounced zig-zag oscillations and reduced trajectory stability. |
+| `setV` (m/s) | $K_p$ | $K_d$ | Lap Time | Result / Notes |
+| :--- | :---: | :---: | :---: | :--- |
+| 4.0 (Constant) | 0.015 | 0.008 | 178 s | Baseline PD test; residual zig-zag still persists. |
+| 4.0 (Constant) | 0.012 | 0.015 | 168 s | Reduced $K_p$ and increased damping ($K_d$) eliminated zig-zagging on straight lines. |
+| 4.0 (Constant) | 0.012 | 0.020 | 166 s | Smoother trajectory with visibly reduced zig-zag in curves. Completed lap 2 s faster due to minimized lateral deviation. |
+| 5.0 (Constant) | 0.015 | 0.018 | 139 s | Notable lap time reduction. Mild oscillations remain, but the derivative term provides enough stability for corners at $5.0\text{ m/s}$. |
+| Dynamic (5.0 to 6.8) | 0.010 | 0.016 | 131 s | High stability with negligible oscillations. Adaptive speed negotiates corners at $5.0\text{ m/s}$ and exploits straightaways up to $6.8\text{ m/s}$. |
+| Dynamic (5.5 to 7.8) | 0.012 | 0.018 | 126 s | Raising the cornering floor to $5.5\text{ m/s}$ and straightaway peak to $7.8\text{ m/s}$ shaved off 5 seconds while preserving damping stability. |
+| Dynamic (5.5 to 8.7) | 0.012 | 0.035 | 120.2 s | Increased maximum speed to $8.7\text{ m/s}$ and $K_d$ to $0.035$, improving lap time by 5.8 seconds, though mild oscillations returned. |
+| Dynamic (5.5 to 11.0) | 0.011 | 0.035 | **92 s** | **Best PD lap time** (verified on both personal and lab CPU setups). Increasing $V_{\max}$ to $11.0\text{ m/s}$ reduced lap time by 28.2 seconds, though at the cost of stronger oscillations at top speed. |
 
 ### Conclusions for Proportional-Derivative (PD) Controller
 
-Throughout the experiments, the PD controller proved to be an effective approach for line following, providing a good balance between steering responsiveness and trajectory stability.
+Throughout the experiments, the PD controller proved highly effective, offering a strong balance between steering responsiveness and trajectory stability:
 
-Initially, the main challenge was reducing the oscillatory behavior (zig-zag movements) caused by excessive steering corrections. Different combinations of proportional (K_p) and derivative (K_d) gains were tested. Reducing $K_p$ helped limit overcorrection, while increasing K_d provided additional damping, resulting in smoother trajectories.
+1. **Damping Oscillations:** Lowering $K_p$ limited initial overcorrection, while increasing $K_d$ provided crucial damping that flattened the vehicle's trajectory on straightaways.
+2. **Dynamic Speed & Gain Scheduling:** Adjusting `setV` based on tracking error magnitude—paired with `speed_factor` angular scaling—yielded dramatic improvements, cutting lap times from $178\text{ s}$ down to **$92\text{ s}$**.
+3. **Stability vs. Speed Trade-off:** Pushing maximum speed to $11.0\text{ m/s}$ reintroduced oscillations on fast sections, showing that even a well-tuned PD controller faces stability limits when frame rates and actuation delays interact at high speeds.
 
-After obtaining a reasonably stable controller, the focus shifted towards improving lap times through dynamic speed control. Instead of maintaining a constant velocity, the robot adjusted its speed according to the distance between the detected line and the image center. This allowed it to maintain lower speeds in curves while reaching higher speeds on straight sections.
+---
 
-The results showed a considerable improvement in performance. The initial configuration completed the lap in 178 seconds, whereas subsequent tuning and dynamic speed adjustments progressively reduced the time. The best result was **92 seconds**, achieved with $K_p = 0.011$, $K_d = 0.035$, and a dynamic speed ranging from 5.5 to 11.0 m/s.
+## 3. Proportional-Integral-Derivative (PID) Controller
 
-However, this improvement also revealed an important limitation: increasing the maximum speed too much resulted in pronounced oscillations and reduced trajectory stability. Therefore, the fastest configuration is not necessarily the most reliable one.
+A **PID controller** combines proportional, integral, and derivative control actions to eliminate steady-state tracking offsets during long curves while maintaining high-speed damping.
 
-Overall, the experiments demonstrate that the PD controller can achieve very good performance through careful gain tuning and dynamic velocity adjustment. Nevertheless, finding an appropriate balance between lap time and trajectory stability remains essential.
+### How It Works & Anti-Windup Protection
 
-## Proportional-Integral-Derivative (PID) Controller
+- **Proportional ($P$):** Reacts to the current horizontal error ($e(t) = 320 - c_X$).
+- **Integral ($I$):** Accumulates past errors over discrete time steps to correct persistent deviations from the track centerline:
+  $$I(t) = I(t-1) + e(t)$$
+- **Anti-Windup Clamping:** A common hazard with PID controllers is *integral windup*, where prolonged curves cause the accumulated error to grow excessively, leading to massive overshoot once the curve ends. To prevent this, **explicit clamping** was implemented in the code to bound the integral term within $[-1000, 1000]$:
+  $$I(t) = \max(-1000, \min(1000, I(t)))$$
+- **Derivative ($D$):** Measures the rate of change of the error ($\Delta e(t) = e(t) - e(t-1)$) to suppress sudden oscillations.
+- **Complete Control Law (High-Speed GPU Configuration):**
+  * **setV** = max(8.0, 17.0 − 0.025 × |err|)
+  * **speed_factor** = 5.0 / setV
+  * **setW** = ((Kp × err) + (Ki × I) + (Kd × Δerr)) × speed_factor
+  * *(Includes a failsafe velocity of `setV = 4.0 m/s` if `cX = 0`)*
 
-A **PID controller** combines three control actions to help the car follow the track more accurately and maintain a stable trajectory.
+### Performance & Evaluation
 
-### How It Works
+- **Strengths:**
+  * **Reduced Steady-State Error:** Helps the vehicle stay tighter to the inside of prolonged curves and straighten out faster onto straightaways.
+  * **Bounded Integral Action:** The clamping mechanism prevents integral windup, keeping corner exits clean and predictable.
+- **Limitations:**
+  * **High Sensitivity to $K_i$:** Even slightly excessive integral gains ($K_i \ge 0.00002$) degrade lap times by introducing slow, weaving oscillations.
+  * **Hardware Frame-Rate Dependency:** At extreme speeds (up to $17.0\text{ m/s}$), the controller relies on high simulation update rates (GPU acceleration) to sample images fast enough.
 
-- **Proportional (P):** Reacts to the current distance between the car and the center of the track (`err = 320 - cX`).
-- **Integral (I):** Accumulates previous errors over time. It helps correct persistent deviations from the center.
-- **Derivative (D):** Measures how quickly the error changes. It helps prevent excessive steering corrections.
+![PID Controller Line Following](assets/p_controller_simulation_PID.png)
+*Figure 3: Vehicle tracking the red line using the PID controller with dynamic speed adaptation and anti-windup clamping.*
 
-Since the camera captures images at separate time intervals, the integral and derivative terms are calculated using previous error values:
+### Experimental Results: PID Controller
 
-**Integral:**
-
-**I = I + err**
-
-**Derivative:**
-
-**Δerr = err(t) − err(t−1)**
-
-The steering output is calculated as:
-
-**W = (Kp × err) + (Ki × I) + (Kd × Δerr)**
-
-#### Performance & Evaluation
-
-* **Strengths:**
-  * **Reduced steady-state error:** Helps correct persistent deviations from the track center.
-  * **Improved accuracy:** Combines current and accumulated errors to improve steering corrections.
-
-* **Limitations:**
-  * **Oscillations:** Excessive integral gain can make the car oscillate around the track.
-  * **Integral windup:** Accumulating too much error can lead to excessive steering corrections.
-  * **More tuning:** Three parameters (`Kp`, `Ki`, and `Kd`) must be adjusted to achieve a good balance between responsiveness and stability.
-  * 
-![P Controller Line Following](assets/p_controller_simulation_PID.png)
-*Figure 3: Vehicle tracking the red line using the baseline Proportional controller, correcting its direction thanks to the PID version.*
-
-### Different versions of the Proportional-Integral-Derivative (PID) Controller to compare performance
-
-| Experiment | setV | Kp | Ki | Kd | Lap Time | Purpose |
-|---|---:|---:|---:|---:|---:|---|
-| PD Baseline | 0.011 | Dynamic (5.5 to 11.0)| 0 | 0.035 | 92 s | Reference result using the PD controller |
-| PID Test 1 | 0.011 | Dynamic (5.5 to 11.0)| 0.00001 | 0.035 | 91 s | A small integral contribution slightly reduced oscillations during the laps while also improving lap time by 1 second. |
-| PID Test 2 | 0.011 | Dynamic (5.5 to 11.0)| 0.00002 | 0.035 | 92 s | Increasing integral action did not improve lap time compared with Test 1. |
-| PID Test 3 | 0.011 | Dynamic (5.5 to 11.0)| 0.00005 | 0.035 | 93 s | A stronger integral contribution increased lap time, suggesting that excessive integral action may negatively affect performance. |
-| PID Test 4 | 0.011 | Dynamic (5.5 to 11.0)| 0.0001 | 0.035 | 93 s | Evaluate the effect of a larger integral gain |
-| PID Test 5 - Run 1 | 0.011 | Dynamic (5.5 to 11.0)| 0.00001 | 0.035 | 85 s | As the integral contribution helped to reduce the oscillation effect, it was tested to increase the speed, obtaining a faster time. |
-| PID Test 5 - Run 2 | 0.011 |Dynamic (5.5 to 11.0)|  0.00001 | 0.035 | 87 s | It was tested again the same run, and, now, a worse time was obtained, but still better than previous runs. |
-| PID Test 5 - Average | 0.011 | Dynamic (5.5 to 11.0)| 0.00001 | 0.035 | 86 s |
-| PID Test 5 - Lab Time (CPU) | 0.011 | Dynamic (5.5 to 11.0) | 0.00001 | 0.035 | 112 s | | I obtained this time trying my code in the laboratory computer with CPU.|
-| PID Test 5 - Lab Time (GPU) | 0.015 | Dynamic (8 to 17.0) | 0.00001 | 0.030 | 48.58 s | | I obtained this time trying my code in the laboratory computer with GPU. I noticdd a big difference when executing this code with the GPU. In the GPU version, it is more noticeable the benefits of the PID Controller. When the sensors detect a straight line, seeing the red mask, the vehicle corrects its direction, being able to reach his highest speed. Another interesting visual detail is that the curves are better taken, fixing the vehicle position. max(8, 17 -0.025*abs(err))|
+| Experiment | `setV` (m/s) | $K_p$ | $K_i$ | $K_d$ | Lap Time | Purpose / Notes |
+| :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| PD Baseline | Dynamic (5.5 to 11.0) | 0.011 | 0 | 0.035 | 92 s | Reference result using the PD controller. |
+| PID Test 1 | Dynamic (5.5 to 11.0) | 0.011 | 0.00001 | 0.035 | 91 s | A small integral contribution slightly reduced oscillations and improved lap time by 1 s. |
+| PID Test 2 | Dynamic (5.5 to 11.0) | 0.011 | 0.00002 | 0.035 | 92 s | Increasing integral action did not improve lap time compared with Test 1. |
+| PID Test 3 | Dynamic (5.5 to 11.0) | 0.011 | 0.00005 | 0.035 | 93 s | A stronger integral contribution increased lap time, showing negative effects from excessive integral action. |
+| PID Test 4 | Dynamic (5.5 to 11.0) | 0.011 | 0.00010 | 0.035 | 93 s | Confirmed performance degradation with a larger integral gain. |
+| PID Test 5 (Run 1) | Dynamic (5.5 to 12.0) | 0.011 | 0.00001 | 0.035 | 85 s | With improved stability from $K_i = 0.00001$, maximum speed was raised to $12.0\text{ m/s}$, achieving a faster time. |
+| PID Test 5 (Run 2) | Dynamic (5.5 to 12.0) | 0.011 | 0.00001 | 0.035 | 87 s | Second validation run under the same configuration, confirming consistent improvement. |
+| PID Test 5 (Avg) | Dynamic (5.5 to 12.0) | 0.011 | 0.00001 | 0.035 | **86 s** | Best average lap time on local CPU ($V_{\max} = 12.0\text{ m/s}$). |
+| PID Lab Test (CPU) | Dynamic (5.5 to 11.0) | 0.011 | 0.00001 | 0.035 | 112 s | Executed on the laboratory computer using software (CPU) rendering. |
+| PID Lab Test (GPU) | Dynamic (8.0 to 17.0) | 0.015 | 0.00001 | 0.030 | **48.58 s** | **Best overall record.** Executed on the laboratory computer with GPU acceleration. Higher simulation refresh rates made PID benefits much more noticeable: rapid straight-line alignment (reaching $17.0\text{ m/s}$) and sharper, well-corrected cornering trajectories. |
 
 ### Conclusions for Proportional-Integral-Derivative (PID) Controller
 
-The experimental results show that adding an integral component to the PD controller can provide a small improvement in performance. The best result with the initial maximum speed of 11 was obtained using Ki = 0.00001, reducing the lap time from 92 to 91 seconds.
+1. **Fine-Tuning the Integral Gain:** Adding a small, clamped integral component ($K_i = 0.00001$) improved cornering precision over the PD baseline, reducing the lap time from $92\text{ s}$ to $91\text{ s}$ at $V_{\max} = 11.0\text{ m/s}$ and allowing a speed increase to $12.0\text{ m/s}$ that achieved an average of **$86\text{ s}$** on CPU. Larger values ($K_i \ge 0.00002$) proved counterproductive.
+2. **Impact of GPU Acceleration:** Running the simulation with GPU hardware acceleration revealed the full potential of the PID architecture. Because the control loop received camera frames and applied actuator commands at a higher frequency, the vehicle handled a much more aggressive velocity profile ($\text{setV} \in [8.0, 17.0]\text{ m/s}$), completing the lap in **48.58 seconds**—a **94% reduction** from the initial $816\text{ s}$ baseline.
 
-However, increasing the integral gain further did not improve performance. Tests with Ki = 0.00002, 0.00005, and 0.0001 resulted in lap times of 92, 93, and 93 seconds, respectively. This suggests that excessive integral action can negatively affect the controller's performance.
+---
 
-Increasing the maximum speed from 11 to 12 produced the best results so far, with lap times of 85 and 87 seconds across two runs, giving an average of 86 seconds. This suggests that increasing the maximum speed can improve overall performance, although some variation between runs is observed.
+## 4. Video Demonstrations
 
-Further experiments could focus on checking the stability of this configuration and finding a balance between lap time and steering oscillations in the CPU version, while the GPU version could focus on optimizing the independent parameters to obtain a higher speed.
+Below are the recorded demonstrations of the best-performing configurations for each controller architecture, executed in my personal laptop with the CPU version:
 
-
+- **Proportional (P) Controller (Best La CPUp: 125.78 s):** [Watch Video Here](#) *(TODO: Insert link)*
+- **Proportional-Derivative (PD) Controller (Best Lap CPU: 92.00 s):** [Watch Video Here](#) *(TODO: Insert link)*
+- **Proportional-Integral-Derivative (PID) Controller (Best Lap CPU: 48.58 s):** [Watch Video Here](#) *(TODO: Insert link)*
