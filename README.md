@@ -173,7 +173,7 @@ The steering output is calculated as:
   * **More tuning:** Three parameters (`Kp`, `Ki`, and `Kd`) must be adjusted to achieve a good balance between responsiveness and stability.
   * 
 ![P Controller Line Following](assets/p_controller_simulation_PID.png)
-*Figure 2: Vehicle tracking the red line using the baseline Proportional controller, correcting its direction thanks to the PID version.*
+*Figure 3: Vehicle tracking the red line using the baseline Proportional controller, correcting its direction thanks to the PID version.*
 
 ### Different versions of the Proportional-Integral-Derivative (PID) Controller to compare performance
 
