@@ -179,7 +179,7 @@ A **PID controller** combines proportional, integral, and derivative control act
 | PID Lab Test (GPU) | Dynamic (8.0 to 17.0) | 0.015 | 0.00001 | 0.030 | **48.58 s** | **Best overall record.** Executed on the laboratory computer with GPU acceleration. Higher simulation refresh rates made PID benefits much more noticeable: rapid straight-line alignment (reaching $17.0\text{ m/s}$) and sharper, well-corrected cornering trajectories. |
 
 ![PID Controller Line Following](assets/PID_Controller_GPU_Result.png)
-*Figure 4: Result obtained when executing the code developed the PID version, showing a faster and better result.*
+*Figure 4: Result obtained when executing the code developed for the PID version, showing a faster and better result.*
 
 ### Conclusions for Proportional-Integral-Derivative (PID) Controller
 
@@ -190,10 +190,10 @@ A **PID controller** combines proportional, integral, and derivative control act
 
 ## 4. Video Demonstrations
 
-Below are the recorded demonstrations of the best-performing configurations for each controller architecture, executed in my personal laptop with the CPU version:
+Below are the recorded demonstrations of the best-performing configurations for each controller architecture, executed on my personal laptop with the CPU version:
 
 - **Proportional (P) Controller (Best Lap CPU configuration):** [Watch Video Here](https://drive.google.com/file/d/1gb6rf0lg5fscB20teDClB2RMUlYdOXaF/view?usp=sharing)
 - **Proportional-Derivative (PD) Controller (Best Lap CPU configuration):** [Watch Video Here](https://drive.google.com/file/d/1qXxmF-Fxeka_33j-yTF0rdP9CEX1lF0W/view?usp=sharing)
 - **Proportional-Integral-Derivative (PID) Controller (Best Lap CPU configuration):** [Watch Video Here](https://drive.google.com/file/d/14sYH46qhBCYl0epYZtoR4DE6WoFyrpqF/view?usp=sharing)
 
-Note: Lap times recorded during video capture on CPU can be slightly higher than benchmark runs due to the additional CPU overhead of screen recording, which slightly reduces the simulation frame rate and control loop frequency.
+**Note:** Lap times recorded during video capture on CPU can be slightly higher than benchmark runs due to the additional CPU overhead of screen recording, which slightly reduces the simulation frame rate and control loop frequency.
