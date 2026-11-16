@@ -196,4 +196,4 @@ Below are the recorded demonstrations of the best-performing configurations for 
 - **Proportional-Derivative (PD) Controller (Best Lap CPU configuration):** [Watch Video Here](https://drive.google.com/file/d/1qXxmF-Fxeka_33j-yTF0rdP9CEX1lF0W/view?usp=sharing)
 - **Proportional-Integral-Derivative (PID) Controller (Best Lap CPU configuration):** [Watch Video Here](https://drive.google.com/file/d/14sYH46qhBCYl0epYZtoR4DE6WoFyrpqF/view?usp=sharing)
 
-**Note:** Lap times recorded during video capture on CPU can be slightly higher than benchmark runs due to the additional CPU overhead of screen recording, which slightly reduces the simulation frame rate and control loop frequency.
+>**Note:** Lap times recorded during video capture on CPU can be slightly higher than benchmark runs due to the additional CPU overhead of screen recording, which slightly reduces the simulation frame rate and control loop frequency.
