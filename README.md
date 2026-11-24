@@ -14,6 +14,5 @@ This repository contains the complete solutions, experimental benchmarks, and te
 ```text
 .
 ├── SJK001-7_Autonomous_Racing_Challenge-main/   # Project 1: Visual Follow Line documentation, metrics & media
-├── code_Controllers/                            # Project 1: P, PD, and PID controller Python implementations
 ├── SJK001-7_Autonomous_Drone_Challenge-main/    # Project 2: Rescue People (HAL & direct ROS 2 / Aerostack2)
 └── README.md                                    # Repository overview & environment setup
